@@ -1,0 +1,39 @@
+services:
+  ros2-slam:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ros2-jazzy-slam:arm64-dev
+    platform: linux/arm64
+    container_name: ros2-slam-m5
+    init: true
+    stdin_open: true
+    tty: true
+    working_dir: /workspaces/slam_ws
+    command: ["sleep", "infinity"]
+    environment:
+      ROS_DOMAIN_ID: "10"
+      ROS_AUTOMATIC_DISCOVERY_RANGE: LOCALHOST
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+      CMAKE_BUILD_PARALLEL_LEVEL: "4"
+      MAKEFLAGS: "-j4"
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - ./ws:/workspaces/slam_ws
+      - ./datasets:/data:ro
+      - slam_build:/workspaces/slam_ws/build
+      - slam_install:/workspaces/slam_ws/install
+      - slam_log:/workspaces/slam_ws/log
+      - slam_ccache:/root/.cache/ccache
+    shm_size: "2gb"
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+
+volumes:
+  slam_build:
+  slam_install:
+  slam_log:
+  slam_ccache:

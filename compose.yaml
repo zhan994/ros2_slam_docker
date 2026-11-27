@@ -9,7 +9,7 @@ services:
     init: true
     stdin_open: true
     tty: true
-    working_dir: /workspaces/slam_ws
+    working_dir: /workspaces/ws_slam
     command: ["sleep", "infinity"]
     environment:
       ROS_DOMAIN_ID: "10"
@@ -20,11 +20,11 @@ services:
     ports:
       - "127.0.0.1:8765:8765"
     volumes:
-      - ./ws:/workspaces/slam_ws
+      - ./ws:/workspaces/ws_slam
       - ./datasets:/data:ro
-      - slam_build:/workspaces/slam_ws/build
-      - slam_install:/workspaces/slam_ws/install
-      - slam_log:/workspaces/slam_ws/log
+      - slam_build:/workspaces/ws_slam/build
+      - slam_install:/workspaces/ws_slam/install
+      - slam_log:/workspaces/ws_slam/log
       - slam_ccache:/root/.cache/ccache
     shm_size: "2gb"
     cap_add:

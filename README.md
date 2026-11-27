@@ -15,7 +15,7 @@
 | Compose 服务 | `ros2-slam` |
 | 容器名 | `ros2-slam-m5` |
 | 本地镜像名 | `ros2-jazzy-slam:arm64-dev` |
-| 工作空间 | `/workspaces/slam_ws` |
+| 工作空间 | `/workspaces/ws_slam` |
 | ROS 发行版 | Jazzy |
 | DDS 实现 | `rmw_fastrtps_cpp` |
 | ROS Domain | `10` |
@@ -47,11 +47,11 @@ Dockerfile 已安装：
 
 | 宿主机目录或 Docker 卷 | 容器路径 | 用途 |
 | --- | --- | --- |
-| `./ws` | `/workspaces/slam_ws` | 源码工作空间，双向读写 |
+| `./ws` | `/workspaces/ws_slam` | 源码工作空间，双向读写 |
 | `./datasets` | `/data` | 数据集，只读 |
-| `slam_build` 命名卷 | `/workspaces/slam_ws/build` | 构建产物 |
-| `slam_install` 命名卷 | `/workspaces/slam_ws/install` | 安装产物 |
-| `slam_log` 命名卷 | `/workspaces/slam_ws/log` | 构建日志 |
+| `slam_build` 命名卷 | `/workspaces/ws_slam/build` | 构建产物 |
+| `slam_install` 命名卷 | `/workspaces/ws_slam/install` | 安装产物 |
+| `slam_log` 命名卷 | `/workspaces/ws_slam/log` | 构建日志 |
 | `slam_ccache` 命名卷 | `/root/.cache/ccache` | 编译缓存目录 |
 
 Compose 通常会为命名卷添加项目名前缀。`build/`、`install/`、`log/` 实际存储在 Docker 卷中，宿主机 `ws/` 里的同名目录不能用于查看容器内这些产物。
@@ -133,7 +133,7 @@ pwd
 ros2 pkg prefix rclcpp
 ```
 
-预期分别能确认 Ubuntu 24.04、`aarch64`、`jazzy`、`/workspaces/slam_ws`，以及 `rclcpp` 的安装路径。
+预期分别能确认 Ubuntu 24.04、`aarch64`、`jazzy`、`/workspaces/ws_slam`，以及 `rclcpp` 的安装路径。
 
 交互式 Bash 会通过 `/root/.bashrc` 自动加载 ROS 环境；工作空间构建完成后，新开的交互式 Bash 也会加载已有的 `install/setup.bash`。使用非交互命令时应显式 `source` 所需环境。
 
@@ -147,7 +147,7 @@ ros2 pkg prefix rclcpp
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-cd /workspaces/slam_ws
+cd /workspaces/ws_slam
 colcon list
 colcon build --symlink-install --executor sequential \
   --cmake-args \
@@ -194,7 +194,7 @@ docker compose exec ros2-slam bash
 ```
 
 ```bash
-source /workspaces/slam_ws/install/setup.bash
+source /workspaces/ws_slam/install/setup.bash
 ros2 run slam_demo cloud_publisher
 ```
 
@@ -275,8 +275,8 @@ bag 的实际话题名、消息类型、QoS 和 TF 必须与算法要求匹配�
 `/data` 为只读目录，不能用于录制输出。如需录制，可写到工作空间，例如：
 
 ```bash
-mkdir -p /workspaces/slam_ws/bags
-ros2 bag record -o /workspaces/slam_ws/bags/test /slam_demo/points
+mkdir -p /workspaces/ws_slam/bags
+ros2 bag record -o /workspaces/ws_slam/bags/test /slam_demo/points
 ```
 
 录制结果会保存在宿主机 `ws/bags/test`。ROS 1 bag 不能按上述 ROS 2 bag 流程直接使用，需要另行转换。
@@ -289,7 +289,7 @@ ros2 bag record -o /workspaces/slam_ws/bags/test /slam_demo/points
 2. 打开 VS Code，安装 Microsoft 的 **Dev Containers** 扩展。
 3. 按 `Cmd+Shift+P`，执行 **Dev Containers: Attach to Running Container...**。
 4. 选择 `ros2-slam-m5`，等待容器连接完成。
-5. 在新窗口中选择 **File → Open Folder...**，打开 `/workspaces/slam_ws`。
+5. 在新窗口中选择 **File → Open Folder...**，打开 `/workspaces/ws_slam`。
 6. 通过 **Terminal → New Terminal** 新建终端；该终端位于容器内，执行 `pwd` 应位于工作空间，`uname -m` 应为 `aarch64`。
 
 在该窗口编辑 `src/` 中的文件，会同步到宿主机仓库的 `ws/src/`。编译和运行直接使用第 5、6 节命令，无需在 macOS 上安装编译依赖。
@@ -300,13 +300,13 @@ ros2 bag record -o /workspaces/slam_ws/bags/test /slam_demo/points
 
 在连接容器的 VS Code 窗口内，安装 **clangd** 扩展，注意选择安装到容器环境。Dockerfile 已安装 `/usr/bin/clangd`。
 
-至少完成一次第 5 节的构建，再在工作空间设置 `/workspaces/slam_ws/.vscode/settings.json` 中加入：
+至少完成一次第 5 节的构建，再在工作空间设置 `/workspaces/ws_slam/.vscode/settings.json` 中加入：
 
 ```json
 {
   "clangd.path": "/usr/bin/clangd",
   "clangd.arguments": [
-    "--compile-commands-dir=/workspaces/slam_ws/build/slam_demo"
+    "--compile-commands-dir=/workspaces/ws_slam/build/slam_demo"
   ]
 }
 ```
@@ -316,7 +316,7 @@ ros2 bag record -o /workspaces/slam_ws/bags/test /slam_demo/points
 编译完成后可在容器终端确认文件存在：
 
 ```bash
-ls /workspaces/slam_ws/build/slam_demo/compile_commands.json
+ls /workspaces/ws_slam/build/slam_demo/compile_commands.json
 ```
 
 ### 9.3 使用 GDB 调试示例
@@ -331,9 +331,9 @@ ls /workspaces/slam_ws/build/slam_demo/compile_commands.json
       "name": "Debug cloud_publisher",
       "type": "cppdbg",
       "request": "launch",
-      "program": "/workspaces/slam_ws/install/slam_demo/lib/slam_demo/cloud_publisher",
+      "program": "/workspaces/ws_slam/install/slam_demo/lib/slam_demo/cloud_publisher",
       "args": [],
-      "cwd": "/workspaces/slam_ws",
+      "cwd": "/workspaces/ws_slam",
       "stopAtEntry": false,
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
@@ -358,7 +358,7 @@ ls /workspaces/slam_ws/build/slam_demo/compile_commands.json
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-cd /workspaces/slam_ws
+cd /workspaces/ws_slam
 # 仅当 /etc/ros/rosdep/sources.list.d/20-default.list 不存在时执行：
 # rosdep init
 rosdep update

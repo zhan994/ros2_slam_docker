@@ -58,10 +58,10 @@ RUN apt-get update \
 RUN printf '%s\n' \
     '' \
     'source /opt/ros/jazzy/setup.bash' \
-    'if [ -f /workspaces/slam_ws/install/setup.bash ]; then' \
-    '    source /workspaces/slam_ws/install/setup.bash' \
+    'if [ -f /workspaces/ws_slam/install/setup.bash ]; then' \
+    '    source /workspaces/ws_slam/install/setup.bash' \
     'fi' \
     >> /root/.bashrc
 
-WORKDIR /workspaces/slam_ws
+WORKDIR /workspaces/ws_slam
 CMD ["sleep", "infinity"]
